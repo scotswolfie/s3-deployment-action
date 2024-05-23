@@ -1,0 +1,18 @@
+<Project>
+  <!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
+  <PropertyGroup>
+
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+
+  </PropertyGroup>
+</Project>
+
+<!--
+<Project>
+<PropertyGroup>
+<BaseIntermediateOutputPath>$(SolutionDir)\artifacts\$(MSBuildProjectName)</BaseIntermediateOutputPath>
+<BaseOutputPath>$(SolutionDir)\artifacts\$(MSBuildProjectName)</BaseOutputPath>
+</PropertyGroup>
+        </Project>
+
+-->
