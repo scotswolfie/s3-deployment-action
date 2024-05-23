@@ -1,7 +1,7 @@
 ﻿FROM mcr.microsoft.com/dotnet/runtime:8.0
 
-WORKDIR /app
+WORKDIR /action
 
 COPY ./dist/S3DeploymentAction ./init
 
-ENTRYPOINT ["./init"]
+ENTRYPOINT ["/action/init"]
