@@ -2,6 +2,6 @@
 
 WORKDIR /app
 
-COPY ./artifacts/publish/S3DeploymentAction/release_linux-x64/S3DeploymentAction ./init
+COPY ./dist/S3DeploymentAction ./init
 
 ENTRYPOINT ["./init"]
