@@ -2,6 +2,6 @@
 
 WORKDIR /action
 
-COPY ./dist/S3DeploymentAction ./init
+COPY ./dist/action_exec ./
 
-ENTRYPOINT ["/action/init"]
+ENTRYPOINT ["/action/action_exec"]
