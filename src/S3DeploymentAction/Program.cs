@@ -74,15 +74,13 @@ public class Program
 
     GitHubClient client = ConfigureGitHubClient(config.Token);
 
-    string? reference = config.Reference
-                        ?? Environment.GetEnvironmentVariable("GITHUB_SHA")
-                        ?? Environment.GetEnvironmentVariable("GITHUB_REF_NAME");
+    string? reference = config.Reference ?? Environment.GetEnvironmentVariable("GITHUB_REF");
 
     if (reference is null)
     {
       throw new Exception(
         "Git ref could not be established. "
-        + "Either ref input, GITHUB_SHA env var, or GITHUB_REF_NAME env var has to be specified.");
+        + "Either ref input or GITHUB_REF environment variable has to be specified.");
     }
 
     CreateDeploymentRequest req = new()
