@@ -8,10 +8,21 @@ public static class Inputs
     string? reference = GetInput("ref");
     bool skipGitHubDeployment = GetBooleanInput("skip-github-deployment") ?? false;
 
+    LogLevel logLevel = GetInput("log-level") switch
+    {
+      "off" => LogLevel.Off,
+      "error" => LogLevel.Error,
+      "warning" => LogLevel.Warning,
+      "info" => LogLevel.Info,
+      "verbose" => LogLevel.Verbose,
+      _ => LogLevel.Verbose
+    };
+
     return new(
       Token: token,
-      SkipGitHubDeployment: skipGitHubDeployment,
-      Reference: reference);
+      Reference: reference,
+      LogLevel: logLevel,
+      SkipGitHubDeployment: skipGitHubDeployment);
   }
 
   /// <summary>

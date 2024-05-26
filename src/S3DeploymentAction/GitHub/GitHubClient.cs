@@ -59,6 +59,11 @@ public class GitHubClient
 
     stream.Position = 0;
 
+    StreamReader reader = new(stream);
+    ConsoleLogger.Verbose($"Sending POST request to {path}. Request body:\n{reader.ReadToEnd()}");
+
+    stream.Position = 0;
+
     using HttpResponseMessage response = await _client.PostAsync(path, new StreamContent(stream));
 
     if (!response.IsSuccessStatusCode)

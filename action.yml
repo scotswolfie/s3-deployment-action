@@ -7,6 +7,9 @@ inputs:
     description: "Overrides the git ref used to create deployments"
   skip-github-deployment:
     description: "Set to `true` if the action should only upload files to S3 and not create a GitHub deployment"
+  log-level:
+    description: "Decide how detailed the messages output to console should be"
+    default: "info"
 runs:
   using: "docker"
   image: "Dockerfile"

@@ -8,9 +8,14 @@ public class Program
 {
   public static async Task Main(string[] args)
   {
-    Trace.Listeners.Add(new ConsoleTraceListener());
-
     Configuration config = Inputs.ParseConfiguration();
+
+    ConsoleLogger.Level = config.LogLevel;
+
+    #if DEBUG
+    // Override the configured verbosity in the debug configuration
+    ConsoleLogger.Level = LogLevel.Verbose;
+    #endif
 
     long deploymentId = default;
 
@@ -46,11 +51,6 @@ public class Program
 
       throw;
     }
-    finally
-    {
-      Trace.Flush();
-      Trace.Close();
-    }
   }
 
   private static GitHubClient ConfigureGitHubClient(string? token)
@@ -70,7 +70,7 @@ public class Program
 
   private static async Task<long> CreateGitHubDeployment(Configuration config)
   {
-    Trace.TraceInformation("Creating a GitHub deployment.");
+    ConsoleLogger.Info("Creating a GitHub deployment.");
 
     GitHubClient client = ConfigureGitHubClient(config.Token);
 
@@ -91,7 +91,7 @@ public class Program
 
     CreateDeploymentResponse res = await client.CreateDeployment(req);
 
-    Trace.TraceInformation($"GitHub deployment was successfully created with id {res.Id}.");
+    ConsoleLogger.Success($"GitHub deployment was successfully created with id {res.Id}.");
     return res.Id;
   }
 
@@ -101,7 +101,7 @@ public class Program
     string? description,
     Configuration config)
   {
-    Trace.TraceInformation($"Updating GitHub deployment {deploymentId} to {state} state.");
+    ConsoleLogger.Info($"Updating GitHub deployment {deploymentId} to {state} state.");
 
     GitHubClient client = ConfigureGitHubClient(config.Token);
 
@@ -120,6 +120,6 @@ public class Program
 
     CreateDeploymentStatusResponse res = await client.CreateDeploymentStatus(deploymentId, req);
 
-    Trace.TraceInformation($"Deployment status {state} was successfully created with id {res.Id}.");
+    ConsoleLogger.Success($"Deployment status {state} was successfully created with id {res.Id}.");
   }
 }
