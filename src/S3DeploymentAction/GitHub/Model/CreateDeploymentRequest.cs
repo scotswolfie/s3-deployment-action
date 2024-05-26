@@ -17,7 +17,7 @@ public class CreateDeploymentRequest
 
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   [JsonPropertyName("required_contexts")]
-  public IEnumerable<string>? RequiredContexts { get; set; }
+  public IEnumerable<string> RequiredContexts { get; set; } = [];
 
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   [JsonPropertyName("payload")]
