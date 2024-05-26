@@ -60,7 +60,7 @@ public class Program
       throw new Exception("API token must be provided if skip-github-deployment input is not set to true.");
     }
 
-    // The owner and name of the repository
+    // The owner and name of the repository.
     string fullRepositoryName = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY")!;
 
     GitHubClient client = new(token, fullRepositoryName);
@@ -107,7 +107,7 @@ public class Program
 
     GitHubClient client = ConfigureGitHubClient(config.Token);
 
-    // GitHub requires that the description is no longer than 140 characters
+    // GitHub requires that the description is no longer than 140 characters.
     if (description is not null && description.Length > 140)
     {
       description = description.Substring(0, 140);

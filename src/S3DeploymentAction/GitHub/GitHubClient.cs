@@ -30,7 +30,7 @@ public class GitHubClient
   {
     ArgumentNullException.ThrowIfNull(fullRepositoryName);
 
-    // Any correct GitHub repository name will contain a single forward slash
+    // Any correct GitHub repository name will contain a single forward slash.
     if (!fullRepositoryName.Contains('/') || fullRepositoryName.IndexOf('/') != fullRepositoryName.LastIndexOf('/'))
     {
       throw new ArgumentException(

@@ -41,7 +41,9 @@ public static class Inputs
       envVar = envVar.Trim();
     }
 
-    return envVar;
+    // GitHub sets all defined inputs to empty strings, so if they are not
+    // required we'll treat them as null.
+    return string.IsNullOrWhiteSpace(envVar) ? null : envVar;
   }
 
   public static bool? GetBooleanInput(string name, bool required = false)
