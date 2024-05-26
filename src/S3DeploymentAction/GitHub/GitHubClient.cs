@@ -1,15 +1,18 @@
+using System.Text.Json;
+using S3DeploymentAction.GitHub.Model;
+
 namespace S3DeploymentAction.GitHub;
 
 public class GitHubClient
 {
   private readonly HttpClient _client;
 
-  public string? RepositoryOwner { get; set; }
-
-  public string? RepositoryName { get; set; }
+  public string? FullRepositoryName { get; set; }
 
   public GitHubClient(string token)
   {
+    ArgumentNullException.ThrowIfNull(token);
+
     _client = new()
     {
       BaseAddress = new("https://api.github.com"),
@@ -23,14 +26,74 @@ public class GitHubClient
 
   public GitHubClient(
     string token,
-    string owner,
-    string repository) : this(token)
+    string fullRepositoryName) : this(token)
   {
-    RepositoryOwner = owner;
-    RepositoryName = repository;
+    ArgumentNullException.ThrowIfNull(fullRepositoryName);
+
+    // Any correct GitHub repository name will contain a single forward slash
+    if (!fullRepositoryName.Contains('/') || fullRepositoryName.IndexOf('/') != fullRepositoryName.LastIndexOf('/'))
+    {
+      throw new ArgumentException(
+        "Repository name must be in the following format: owner/repository",
+        nameof(fullRepositoryName));
+    }
+
+    FullRepositoryName = fullRepositoryName;
   }
 
-  public async Task CreateDeployment()
+  private async Task<TResponse?> PostRequestAsync<TRequest, TResponse>(
+    string path,
+    TRequest request)
   {
+    ArgumentNullException.ThrowIfNull(path);
+    ArgumentNullException.ThrowIfNull(request);
+
+    if (FullRepositoryName is null)
+    {
+      throw new InvalidOperationException($"{nameof(FullRepositoryName)} must be set before calling the GitHub API.");
+    }
+
+    using MemoryStream stream = new();
+
+    await JsonSerializer.SerializeAsync(stream, request);
+
+    stream.Position = 0;
+
+    HttpResponseMessage response = await _client.PostAsync(path, new StreamContent(stream));
+
+    if (!response.IsSuccessStatusCode)
+    {
+      string message = await response.Content.ReadAsStringAsync();
+
+      string errorMessage = "GitHub API error encountered:\n"
+                            + $"Response code: {response.StatusCode}\n"
+                            + $"Response body: {message}";
+
+      throw new Exception(errorMessage);
+    }
+
+    Stream responseStream = await response.Content.ReadAsStreamAsync();
+
+    return await JsonSerializer.DeserializeAsync<TResponse>(responseStream);
+  }
+
+  public async Task<CreateDeploymentResponse?> CreateDeployment(CreateDeploymentRequest request)
+  {
+    ArgumentNullException.ThrowIfNull(request);
+
+    string path = $"/repos/{FullRepositoryName}/deployments";
+
+    return await PostRequestAsync<CreateDeploymentRequest, CreateDeploymentResponse>(path, request);
+  }
+
+  public async Task<CreateDeploymentStatusResponse?> CreateDeploymentStatus(
+    long deploymentId,
+    CreateDeploymentStatusRequest request)
+  {
+    ArgumentNullException.ThrowIfNull(request);
+
+    string path = $"/repos/{FullRepositoryName}/deployments/{deploymentId}/statuses";
+
+    return await PostRequestAsync<CreateDeploymentStatusRequest, CreateDeploymentStatusResponse>(path, request);
   }
 }
