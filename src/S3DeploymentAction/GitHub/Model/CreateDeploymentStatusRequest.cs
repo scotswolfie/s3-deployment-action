@@ -2,7 +2,7 @@
 
 namespace S3DeploymentAction.GitHub.Model;
 
-public class CreateDeploymentStatusRequest()
+public class CreateDeploymentStatusRequest
 {
   [JsonPropertyName("state")]
   public required string State { get; set; }

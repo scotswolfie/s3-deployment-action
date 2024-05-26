@@ -2,7 +2,7 @@
 
 namespace S3DeploymentAction.GitHub.Model;
 
-public class CreateDeploymentRequest()
+public class CreateDeploymentRequest
 {
   [JsonPropertyName("ref")]
   public required string Ref { get; set; }

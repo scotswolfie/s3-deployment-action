@@ -5,10 +5,12 @@ public static class Inputs
   public static Configuration ParseConfiguration()
   {
     string token = GetInput("github-token", true)!;
+    bool skipGitHubDeployment = GetBooleanInput("skip-github-deployment") ?? false;
     string? reference = GetInput("ref");
 
     return new(
       Token: token,
+      SkipGitHubDeployment: skipGitHubDeployment,
       Reference: reference);
   }
 
@@ -40,5 +42,22 @@ public static class Inputs
     }
 
     return envVar;
+  }
+
+  public static bool? GetBooleanInput(string name, bool required = false)
+  {
+    string? input = GetInput(name, required);
+
+    if (input is not null)
+    {
+      return input.ToLower() switch
+      {
+        "true" => true,
+        "false" => false,
+        _ => throw new ArgumentException($"Input {name} has to have one of the following values: true, false")
+      };
+    }
+
+    return null;
   }
 }

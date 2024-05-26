@@ -41,7 +41,7 @@ public class GitHubClient
     FullRepositoryName = fullRepositoryName;
   }
 
-  private async Task<TResponse?> PostRequestAsync<TRequest, TResponse>(
+  private async Task<TResponse> PostRequestAsync<TRequest, TResponse>(
     string path,
     TRequest request)
   {
@@ -59,7 +59,7 @@ public class GitHubClient
 
     stream.Position = 0;
 
-    HttpResponseMessage response = await _client.PostAsync(path, new StreamContent(stream));
+    using HttpResponseMessage response = await _client.PostAsync(path, new StreamContent(stream));
 
     if (!response.IsSuccessStatusCode)
     {
@@ -72,12 +72,28 @@ public class GitHubClient
       throw new Exception(errorMessage);
     }
 
-    Stream responseStream = await response.Content.ReadAsStreamAsync();
+    try
+    {
+      await using Stream responseStream = await response.Content.ReadAsStreamAsync();
 
-    return await JsonSerializer.DeserializeAsync<TResponse>(responseStream);
+      TResponse? parsedResponse = await JsonSerializer.DeserializeAsync<TResponse>(responseStream);
+
+      if (parsedResponse is null)
+      {
+        throw new Exception("The response from GitHub API could not be parsed.");
+      }
+
+      return parsedResponse;
+    }
+    catch (JsonException ex)
+    {
+      string responseBody = await response.Content.ReadAsStringAsync();
+
+      throw new Exception($"Following body was returned from GitHub and could not be parsed:\n{responseBody}", ex);
+    }
   }
 
-  public async Task<CreateDeploymentResponse?> CreateDeployment(CreateDeploymentRequest request)
+  public async Task<CreateDeploymentResponse> CreateDeployment(CreateDeploymentRequest request)
   {
     ArgumentNullException.ThrowIfNull(request);
 
@@ -86,7 +102,7 @@ public class GitHubClient
     return await PostRequestAsync<CreateDeploymentRequest, CreateDeploymentResponse>(path, request);
   }
 
-  public async Task<CreateDeploymentStatusResponse?> CreateDeploymentStatus(
+  public async Task<CreateDeploymentStatusResponse> CreateDeploymentStatus(
     long deploymentId,
     CreateDeploymentStatusRequest request)
   {
