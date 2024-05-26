@@ -34,7 +34,7 @@ public class GitHubClient
     if (!fullRepositoryName.Contains('/') || fullRepositoryName.IndexOf('/') != fullRepositoryName.LastIndexOf('/'))
     {
       throw new ArgumentException(
-        "Repository name must be in the following format: owner/repository",
+        "Repository name must be in the following format: owner/repository.",
         nameof(fullRepositoryName));
     }
 

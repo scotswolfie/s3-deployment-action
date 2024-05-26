@@ -21,7 +21,7 @@ public class Program
       await UpdateDeploymentStatus(
         deploymentId,
         "in_progress",
-        "Preparing to deploy files to the S3 bucket",
+        "Preparing to deploy files to the S3 bucket.",
         config);
     }
 
@@ -33,7 +33,7 @@ public class Program
         await UpdateDeploymentStatus(
           deploymentId,
           "success",
-          "The deployment files were successfully uploaded to S3",
+          "The deployment files were successfully uploaded to S3.",
           config);
       }
     }
@@ -53,8 +53,13 @@ public class Program
     }
   }
 
-  private static GitHubClient ConfigureGitHubClient(string token)
+  private static GitHubClient ConfigureGitHubClient(string? token)
   {
+    if (token is null)
+    {
+      throw new Exception("API token must be provided if skip-github-deployment input is not set to true.");
+    }
+
     // The owner and name of the repository
     string fullRepositoryName = Environment.GetEnvironmentVariable("GITHUB_REPOSITORY")!;
 
@@ -65,7 +70,7 @@ public class Program
 
   private static async Task<long> CreateGitHubDeployment(Configuration config)
   {
-    Trace.TraceInformation("Creating a GitHub deployment");
+    Trace.TraceInformation("Creating a GitHub deployment.");
 
     GitHubClient client = ConfigureGitHubClient(config.Token);
 
@@ -88,7 +93,7 @@ public class Program
 
     CreateDeploymentResponse res = await client.CreateDeployment(req);
 
-    Trace.TraceInformation($"GitHub deployment was successfully created with id {res.Id}");
+    Trace.TraceInformation($"GitHub deployment was successfully created with id {res.Id}.");
     return res.Id;
   }
 
@@ -116,7 +121,7 @@ public class Program
     };
 
     CreateDeploymentStatusResponse res = await client.CreateDeploymentStatus(deploymentId, req);
-    
-    Trace.TraceInformation($"Deployment status {state} was successfully created with id {res.Id}");
+
+    Trace.TraceInformation($"Deployment status {state} was successfully created with id {res.Id}.");
   }
 }

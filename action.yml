@@ -1,5 +1,12 @@
 ﻿name: "AWS S3 Deployment Action"
 description: "Deploy static files to AWS S3 and create GitHub deployments easily"
+inputs:
+  github-token:
+    description: "GitHub API token necessary to create deployments (can be omitted if skip-github-deployment is true)"
+  ref:
+    description: "Overrides the git ref used to create deployments"
+  skip-github-deployment:
+    description: "Set to `true` if the action should only upload files to S3 and not create a GitHub deployment"
 runs:
   using: "docker"
   image: "Dockerfile"

@@ -4,9 +4,9 @@ public static class Inputs
 {
   public static Configuration ParseConfiguration()
   {
-    string token = GetInput("github-token", true)!;
-    bool skipGitHubDeployment = GetBooleanInput("skip-github-deployment") ?? false;
+    string? token = GetInput("github-token");
     string? reference = GetInput("ref");
+    bool skipGitHubDeployment = GetBooleanInput("skip-github-deployment") ?? false;
 
     return new(
       Token: token,
