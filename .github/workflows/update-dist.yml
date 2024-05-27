@@ -1,8 +1,8 @@
 ﻿# This is a temporary workflow meant to be replaced by a proper release
 # release workflow at a later date.
+name: Build and update the binary
 on:
   workflow_dispatch:
-
 permissions: write-all
 jobs:
   update-executable:
