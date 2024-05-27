@@ -1,0 +1,27 @@
+﻿# This is a temporary workflow meant to be replaced by a proper release
+# release workflow at a later date.
+on:
+  workflow_dispatch:
+
+permissions: write-all
+jobs:
+  update-executable:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Publish binary
+        run: dotnet publish -r linux-x64
+      - name: Prepare git
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+      - name: Copy the build artifact to the dist directory
+        run: cp ./artifacts/publish/S3DeploymentAction/release_linux-x64/S3DeploymentAction ./dist/action_exec
+      - name: Commit the new executable
+        run: git add ./dist/action_exec && git commit -m "🚀 Update action's executable"
+      - name: Push the commit
+        run: git push
