@@ -35,11 +35,11 @@ public class Program
     {
       string objectPrefix = await UploadToS3(config);
 
-      if (config.EnvironmentUrl is not null)
+      if (config is { SkipGitHubDeployment: false, EnvironmentUrl: not null })
       {
-        config.EnvironmentUrl = new(config.EnvironmentUrl.ToString().Replace("{prefix}", objectPrefix));
+        config.EnvironmentUrl = new(config.EnvironmentUrl.Replace("{prefix}", objectPrefix));
         ConsoleLogger.Info($"Environment URL after prefix replacement: {config.EnvironmentUrl}");
-        AddOutput("environment-url", config.EnvironmentUrl.ToString());
+        AddOutput("environment-url", config.EnvironmentUrl);
       }
 
       if (!config.SkipGitHubDeployment && deploymentId != default)
@@ -179,7 +179,7 @@ public class Program
     }
     catch (Exception ex)
     {
-      ConsoleLogger.Error($"Could not set output {name}, reason: {ex.Message}");
+      ConsoleLogger.Error($"Could not set output {name}, reason: {ex.Message}.");
     }
   }
 
@@ -196,7 +196,7 @@ public class Program
 
     if (config.S3Endpoint is not null)
     {
-      clientConfig.ServiceURL = config.S3Endpoint.ToString();
+      clientConfig.ServiceURL = config.S3Endpoint;
     }
 
     AmazonS3Client client = new(clientCredentials, clientConfig);
@@ -222,8 +222,11 @@ public class Program
       AddOutput("object-prefix-guid", prefixGuid.ToString());
     }
 
-    ConsoleLogger.Info($"Files will be uploaded with the following prefix: {prefix}");
-    AddOutput("object-prefix", prefix.ToString());
+    if (prefix.Length > 0)
+    {
+      ConsoleLogger.Info($"Files will be uploaded with the following prefix: {prefix}");
+      AddOutput("object-prefix", prefix.ToString());
+    }
 
     if (!Path.Exists(config.SourceDirectory))
     {
