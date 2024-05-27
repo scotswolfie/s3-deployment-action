@@ -24,12 +24,15 @@ public static class ConsoleLogger
     ConsoleColor currentColor = Console.ForegroundColor;
     Console.ForegroundColor = color ?? currentColor;
 
-    Console.WriteLine(
-      "[{0:u}] [{1}]: {2}: {3}",
-      DateTimeOffset.UtcNow,
-      Enum.GetName(typeof(LogLevel), level),
-      callerName,
-      message);
+    foreach (string line in message.Split('\n'))
+    {
+      Console.WriteLine(
+        "[{0:u}] [{1}]: {2}: {3}",
+        DateTimeOffset.UtcNow,
+        Enum.GetName(typeof(LogLevel), level),
+        callerName,
+        line);
+    }
 
     Console.ForegroundColor = currentColor;
   }
@@ -40,7 +43,7 @@ public static class ConsoleLogger
     {
       return;
     }
-    
+
     WriteLog(message, callerName, LogLevel.Info, ConsoleColor.Blue);
   }
 
@@ -50,7 +53,7 @@ public static class ConsoleLogger
     {
       return;
     }
-    
+
     WriteLog(message, callerName, LogLevel.Info, ConsoleColor.Green);
   }
 
@@ -60,7 +63,7 @@ public static class ConsoleLogger
     {
       return;
     }
-    
+
     WriteLog(message, callerName, LogLevel.Verbose);
   }
 
@@ -73,7 +76,7 @@ public static class ConsoleLogger
 
     WriteLog(message, callerName, LogLevel.Warning, ConsoleColor.Yellow);
   }
-  
+
   public static void Error(string message, [CallerMemberName] string callerName = "")
   {
     if (Level < LogLevel.Error)

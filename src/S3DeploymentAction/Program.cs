@@ -1,5 +1,10 @@
-﻿using S3DeploymentAction.GitHub;
+﻿using Amazon;
+using Amazon.Runtime;
+using Amazon.S3;
+using Amazon.S3.Model;
+using S3DeploymentAction.GitHub;
 using S3DeploymentAction.GitHub.Model;
+using System.Text;
 
 namespace S3DeploymentAction;
 
@@ -10,11 +15,6 @@ public class Program
     Configuration config = Inputs.ParseConfiguration();
 
     ConsoleLogger.Level = config.LogLevel;
-
-    #if DEBUG
-    // Override the configured verbosity in the debug configuration
-    ConsoleLogger.Level = LogLevel.Verbose;
-    #endif
 
     long deploymentId = default;
 
@@ -33,7 +33,15 @@ public class Program
 
     try
     {
-      // TODO: Upload files to S3
+      string objectPrefix = await UploadToS3(config);
+
+      if (config.EnvironmentUrl is not null)
+      {
+        config.EnvironmentUrl = new(config.EnvironmentUrl.ToString().Replace("{prefix}", objectPrefix));
+        ConsoleLogger.Info($"Environment URL after prefix replacement: {config.EnvironmentUrl}");
+        AddOutput("environment-url", config.EnvironmentUrl.ToString());
+      }
+
       if (!config.SkipGitHubDeployment && deploymentId != default)
       {
         await UpdateDeploymentStatus(
@@ -114,7 +122,7 @@ public class Program
       description = description.Substring(0, 140);
     }
 
-    Uri? logUrl = config.DeploymentLogUrl;
+    string? logUrl = config.DeploymentLogUrl;
 
     if (logUrl is null)
     {
@@ -126,16 +134,23 @@ public class Program
       }
       else
       {
-        ConsoleLogger.Warning("GITHUB_RUN_ID was not provided, skipping setting LogUrl");
+        ConsoleLogger.Warning("GITHUB_RUN_ID was not provided, skipping setting LogUrl.");
       }
+    }
+
+    string? environmentUrl = null;
+
+    if (config.EnvironmentUrl is not null && state != "in_progress")
+    {
+      environmentUrl = config.EnvironmentUrl;
     }
 
     CreateDeploymentStatusRequest req = new()
     {
       Description = description,
       Environment = config.EnvironmentName,
-      EnvironmentUrl = config.EnvironmentUrl, // TODO: Replace {prefix} with the actual prefix used
-      LogUrl = logUrl,
+      EnvironmentUrl = environmentUrl is not null ? new Uri(environmentUrl) : null,
+      LogUrl = logUrl is not null ? new Uri(logUrl) : null,
       State = state
     };
 
@@ -166,5 +181,86 @@ public class Program
     {
       ConsoleLogger.Error($"Could not set output {name}, reason: {ex.Message}");
     }
+  }
+
+  private static async Task<string> UploadToS3(Configuration config)
+  {
+    ConsoleLogger.Info("Preparing to upload files to S3.");
+
+    BasicAWSCredentials clientCredentials = new(config.AwsAccessKey, config.AwsSecretAccessKey);
+
+    AmazonS3Config clientConfig = new()
+    {
+      RegionEndpoint = RegionEndpoint.GetBySystemName(config.AwsRegion)
+    };
+
+    if (config.S3Endpoint is not null)
+    {
+      clientConfig.ServiceURL = config.S3Endpoint.ToString();
+    }
+
+    AmazonS3Client client = new(clientCredentials, clientConfig);
+
+    StringBuilder prefix = new();
+
+    prefix.Append(config.ObjectPrefix ?? "");
+
+    if (prefix[0] == '/')
+    {
+      prefix.Remove(0, 1);
+    }
+
+    if (prefix[^1] != '/')
+    {
+      prefix.Insert(prefix.Length, '/');
+    }
+
+    if (config.ObjectPrefixGuid)
+    {
+      Guid prefixGuid = Guid.NewGuid();
+      prefix.Insert(prefix.Length, $"{prefixGuid.ToString()}/");
+      AddOutput("object-prefix-guid", prefixGuid.ToString());
+    }
+
+    ConsoleLogger.Info($"Files will be uploaded with the following prefix: {prefix}");
+    AddOutput("object-prefix", prefix.ToString());
+
+    if (!Path.Exists(config.SourceDirectory))
+    {
+      throw new DirectoryNotFoundException($"Directory at path {config.SourceDirectory} does not exist.");
+    }
+
+    IEnumerable<string> filesToUpload = Directory
+      .EnumerateFiles(
+        config.SourceDirectory,
+        "*",
+        SearchOption.AllDirectories)
+      .Select(Path.GetFullPath);
+
+    ConsoleLogger.Info("Beginning to upload files to S3.");
+
+    foreach (string filePath in filesToUpload)
+    {
+      string mimeType = MimeMapping.MimeUtility.GetMimeMapping(Path.GetFileName(filePath));
+      string fileLocation = Path.GetRelativePath(config.SourceDirectory, filePath)
+        .Replace(Path.DirectorySeparatorChar, '/');
+      string objectKey = $"{prefix}{fileLocation}";
+
+      ConsoleLogger.Verbose($"Uploading {filePath} ({mimeType}) with key {objectKey}.");
+
+      PutObjectRequest req = new()
+      {
+        BucketName = config.BucketName,
+        ContentType = mimeType,
+        Key = objectKey,
+        FilePath = filePath
+      };
+
+      await client.PutObjectAsync(req);
+    }
+
+    ConsoleLogger.Info("Finished uploading files to S3.");
+
+    return prefix.ToString();
   }
 }

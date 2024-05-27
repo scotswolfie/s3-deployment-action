@@ -7,6 +7,9 @@ inputs:
   aws-secret-access-key:
     description: "Secret access key to use when uploading files to S3"
     required: true
+  aws-region:
+    description: "The name of the AWS region to use (e.g. eu-west-1)"
+    required: true
   bucket-name:
     description: "Which bucket to upload the files to"
     required: true
@@ -42,6 +45,12 @@ inputs:
 outputs:
   deployment-id:
     description: "The ID of deployment created"
+  environment-url:
+    description: "The final environment URL assigned to deployment"
+  object-prefix-guid:
+    description: "GUID used as part of the object prefix during S3 upload"
+  object-prefix:
+    description: "The final object prefix used during S3 upload"
 runs:
   using: "docker"
   image: "Dockerfile"

@@ -9,17 +9,18 @@ public static class Inputs
     // S3 upload settings
     string awsAccessKey = GetInput("aws-access-key", true)!;
     string awsSecretAccessKey = GetInput("aws-secret-access-key", true)!;
+    string awsRegion = GetInput("aws-region", true)!;
     string bucketName = GetInput("bucket-name", true)!;
     string sourceDirectory = GetInput("source-directory", true)!;
-    Uri? s3Endpoint = GetUriInput("s3-endpoint");
+    string? s3Endpoint = GetInput("s3-endpoint");
 
     string? objectPrefix = GetInput("object-prefix");
     bool objectPrefixGuid = GetBooleanInput("object-prefix-guid") ?? true;
 
     // Deployment settings
-    Uri? deploymentLogUrl = GetUriInput("deployment-log-url");
+    string? deploymentLogUrl = GetInput("deployment-log-url");
     string environmentName = GetInput("environment-name") ?? "production";
-    Uri? environmentUrl = GetUriInput("environment-url");
+    string? environmentUrl = GetInput("environment-url");
     string? githubToken = GetInput("github-token");
     bool productionEnvironment = GetBooleanInput("production-environment") ?? environmentName == "production";
     string? gitRef = GetInput("git-ref");
@@ -39,6 +40,7 @@ public static class Inputs
     return new(
       AwsAccessKey: awsAccessKey,
       AwsSecretAccessKey: awsSecretAccessKey,
+      AwsRegion: awsRegion,
       BucketName: bucketName,
       DeploymentLogUrl: deploymentLogUrl,
       EnvironmentName: environmentName,
@@ -98,18 +100,6 @@ public static class Inputs
         "false" => false,
         _ => throw new ArgumentException($"Input {name} has to have one of the following values: true, false")
       };
-    }
-
-    return null;
-  }
-
-  public static Uri? GetUriInput(string name, bool required = false)
-  {
-    string? inputValue = GetInput(name, required);
-
-    if (inputValue is not null)
-    {
-      return new(inputValue);
     }
 
     return null;
