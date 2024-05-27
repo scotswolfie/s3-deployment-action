@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using S3DeploymentAction.GitHub;
+﻿using S3DeploymentAction.GitHub;
 using S3DeploymentAction.GitHub.Model;
 
 namespace S3DeploymentAction;
@@ -22,6 +21,8 @@ public class Program
     if (!config.SkipGitHubDeployment)
     {
       deploymentId = await CreateGitHubDeployment(config);
+
+      AddOutput("deployment-id", deploymentId.ToString());
 
       await UpdateDeploymentStatus(
         deploymentId,
@@ -121,5 +122,28 @@ public class Program
     CreateDeploymentStatusResponse res = await client.CreateDeploymentStatus(deploymentId, req);
 
     ConsoleLogger.Success($"Deployment status {state} was successfully created with id {res.Id}.");
+  }
+
+  private static void AddOutput(string name, string value)
+  {
+    ConsoleLogger.Verbose($"Setting output {name} with value {value}.");
+    string? outputFile = Environment.GetEnvironmentVariable("GITHUB_OUTPUT");
+
+    if (outputFile is null)
+    {
+      ConsoleLogger.Warning($"GITHUB_OUTPUT was not defined, skipping output {name}.");
+      return;
+    }
+
+    try
+    {
+      using StreamWriter writer = File.AppendText(outputFile);
+
+      writer.WriteLine($"{name}={value}");
+    }
+    catch (Exception ex)
+    {
+      ConsoleLogger.Error($"Could not set output {name}, reason: {ex.Message}");
+    }
   }
 }

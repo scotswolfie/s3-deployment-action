@@ -10,6 +10,9 @@ inputs:
   log-level:
     description: "Decide how detailed the messages output to console should be"
     default: "info"
+outputs:
+  deployment-id:
+    description: "The ID of deployment created"
 runs:
   using: "docker"
   image: "Dockerfile"
