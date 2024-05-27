@@ -4,19 +4,28 @@ public static class Inputs
 {
   public static Configuration ParseConfiguration()
   {
-    string? token = GetInput("github-token");
-    string? reference = GetInput("ref");
+    // Null-forgiving operator is used for required inputs, since the GetInput
+    // function will throw an exception if they're not present.
+    // S3 upload settings
+    string awsAccessKey = GetInput("aws-access-key", true)!;
+    string awsSecretAccessKey = GetInput("aws-secret-access-key", true)!;
+    string bucketName = GetInput("bucket-name", true)!;
+    string sourceDirectory = GetInput("source-directory", true)!;
+    Uri? s3Endpoint = GetUriInput("s3-endpoint");
 
+    string? objectPrefix = GetInput("object-prefix");
+    bool objectPrefixGuid = GetBooleanInput("object-prefix-guid") ?? true;
+
+    // Deployment settings
+    Uri? deploymentLogUrl = GetUriInput("deployment-log-url");
+    string environmentName = GetInput("environment-name") ?? "production";
+    Uri? environmentUrl = GetUriInput("environment-url");
+    string? githubToken = GetInput("github-token");
+    bool productionEnvironment = GetBooleanInput("production-environment") ?? environmentName == "production";
+    string? gitRef = GetInput("git-ref");
     bool skipGitHubDeployment = GetBooleanInput("skip-github-deployment") ?? false;
-    
-    string? deploymentLogUrlInput = GetInput("deployment-log-url");
-    Uri? deploymentLogUrl = null;
 
-    if (deploymentLogUrlInput is not null)
-    {
-      deploymentLogUrl = new(deploymentLogUrlInput);
-    }
-
+    // Miscellaneous settings
     LogLevel logLevel = GetInput("log-level") switch
     {
       "off" => LogLevel.Off,
@@ -28,11 +37,21 @@ public static class Inputs
     };
 
     return new(
-      Token: token,
-      Reference: reference,
+      AwsAccessKey: awsAccessKey,
+      AwsSecretAccessKey: awsSecretAccessKey,
+      BucketName: bucketName,
       DeploymentLogUrl: deploymentLogUrl,
+      EnvironmentName: environmentName,
+      EnvironmentUrl: environmentUrl,
+      GitHubToken: githubToken,
+      GitRef: gitRef,
       LogLevel: logLevel,
-      SkipGitHubDeployment: skipGitHubDeployment);
+      ObjectPrefix: objectPrefix,
+      ObjectPrefixGuid: objectPrefixGuid,
+      ProductionEnvironment: productionEnvironment,
+      S3Endpoint: s3Endpoint,
+      SkipGitHubDeployment: skipGitHubDeployment,
+      SourceDirectory: sourceDirectory);
   }
 
   /// <summary>
@@ -79,6 +98,18 @@ public static class Inputs
         "false" => false,
         _ => throw new ArgumentException($"Input {name} has to have one of the following values: true, false")
       };
+    }
+
+    return null;
+  }
+
+  public static Uri? GetUriInput(string name, bool required = false)
+  {
+    string? inputValue = GetInput(name, required);
+
+    if (inputValue is not null)
+    {
+      return new(inputValue);
     }
 
     return null;

@@ -73,21 +73,23 @@ public class Program
   {
     ConsoleLogger.Info("Creating a GitHub deployment.");
 
-    GitHubClient client = ConfigureGitHubClient(config.Token);
+    GitHubClient client = ConfigureGitHubClient(config.GitHubToken);
 
-    string? reference = config.Reference ?? Environment.GetEnvironmentVariable("GITHUB_REF");
+    string? reference = config.GitRef ?? Environment.GetEnvironmentVariable("GITHUB_REF");
 
     if (string.IsNullOrWhiteSpace(reference))
     {
       throw new Exception(
         "Git ref could not be established. "
-        + "Either ref input or GITHUB_REF environment variable has to be specified.");
+        + "Either git-ref input or GITHUB_REF environment variable has to be specified.");
     }
 
     CreateDeploymentRequest req = new()
     {
+      Description = "Deployment to AWS S3 created via GitHub Actions",
+      Environment = config.EnvironmentName,
+      ProductionEnvironment = config.ProductionEnvironment,
       Ref = reference
-      // TODO: Add more options via inputs
     };
 
     CreateDeploymentResponse res = await client.CreateDeployment(req);
@@ -104,7 +106,7 @@ public class Program
   {
     ConsoleLogger.Info($"Updating GitHub deployment {deploymentId} to {state} state.");
 
-    GitHubClient client = ConfigureGitHubClient(config.Token);
+    GitHubClient client = ConfigureGitHubClient(config.GitHubToken);
 
     // GitHub requires that the description is no longer than 140 characters.
     if (description is not null && description.Length > 140)
@@ -130,10 +132,11 @@ public class Program
 
     CreateDeploymentStatusRequest req = new()
     {
-      State = state,
       Description = description,
-      LogUrl = logUrl
-      // TODO: Add more options via inputs
+      Environment = config.EnvironmentName,
+      EnvironmentUrl = config.EnvironmentUrl, // TODO: Replace {prefix} with the actual prefix used
+      LogUrl = logUrl,
+      State = state
     };
 
     CreateDeploymentStatusResponse res = await client.CreateDeploymentStatus(deploymentId, req);
