@@ -10,7 +10,7 @@ public static class Inputs
     bool skipGitHubDeployment = GetBooleanInput("skip-github-deployment") ?? false;
     
     string? deploymentLogUrlInput = GetInput("deployment-log-url");
-    Uri deploymentLogUrl = null;
+    Uri? deploymentLogUrl = null;
 
     if (deploymentLogUrlInput is not null)
     {
