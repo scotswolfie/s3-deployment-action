@@ -203,14 +203,14 @@ public class Program
 
     StringBuilder prefix = new();
 
-    prefix.Append(config.ObjectPrefix ?? "");
+    prefix.Append(config.ObjectPrefix ?? string.Empty);
 
-    if (prefix[0] == '/')
+    if (prefix.Length > 0 && prefix[0] == '/')
     {
       prefix.Remove(0, 1);
     }
 
-    if (prefix[^1] != '/')
+    if (prefix.Length > 0 && prefix[^1] != '/')
     {
       prefix.Insert(prefix.Length, '/');
     }
