@@ -6,7 +6,16 @@ public static class Inputs
   {
     string? token = GetInput("github-token");
     string? reference = GetInput("ref");
+
     bool skipGitHubDeployment = GetBooleanInput("skip-github-deployment") ?? false;
+    
+    string? deploymentLogUrlInput = GetInput("deployment-log-url");
+    Uri deploymentLogUrl = null;
+
+    if (deploymentLogUrlInput is not null)
+    {
+      deploymentLogUrl = new(deploymentLogUrlInput);
+    }
 
     LogLevel logLevel = GetInput("log-level") switch
     {
@@ -21,6 +30,7 @@ public static class Inputs
     return new(
       Token: token,
       Reference: reference,
+      DeploymentLogUrl: deploymentLogUrl,
       LogLevel: logLevel,
       SkipGitHubDeployment: skipGitHubDeployment);
   }

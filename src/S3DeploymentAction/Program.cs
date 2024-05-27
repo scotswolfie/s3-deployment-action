@@ -77,7 +77,7 @@ public class Program
 
     string? reference = config.Reference ?? Environment.GetEnvironmentVariable("GITHUB_REF");
 
-    if (reference is null)
+    if (string.IsNullOrWhiteSpace(reference))
     {
       throw new Exception(
         "Git ref could not be established. "
@@ -112,10 +112,27 @@ public class Program
       description = description.Substring(0, 140);
     }
 
+    Uri? logUrl = config.DeploymentLogUrl;
+
+    if (logUrl is null)
+    {
+      string? runId = Environment.GetEnvironmentVariable("GITHUB_RUN_ID");
+
+      if (!string.IsNullOrWhiteSpace(runId))
+      {
+        logUrl = new($"https://github.com/{client.FullRepositoryName}/actions/runs/{runId}");
+      }
+      else
+      {
+        ConsoleLogger.Warning("GITHUB_RUN_ID was not provided, skipping setting LogUrl");
+      }
+    }
+
     CreateDeploymentStatusRequest req = new()
     {
       State = state,
-      Description = description
+      Description = description,
+      LogUrl = logUrl
       // TODO: Add more options via inputs
     };
 
@@ -127,9 +144,10 @@ public class Program
   private static void AddOutput(string name, string value)
   {
     ConsoleLogger.Verbose($"Setting output {name} with value {value}.");
+
     string? outputFile = Environment.GetEnvironmentVariable("GITHUB_OUTPUT");
 
-    if (outputFile is null)
+    if (string.IsNullOrWhiteSpace(outputFile))
     {
       ConsoleLogger.Warning($"GITHUB_OUTPUT was not defined, skipping output {name}.");
       return;

@@ -9,7 +9,9 @@ inputs:
     description: "Set to `true` if the action should only upload files to S3 and not create a GitHub deployment"
   log-level:
     description: "Decide how detailed the messages output to console should be"
-    default: "info"
+    default: "info",
+  deployment-log-url:
+    description: "Overrides the default deployment logs address"
 outputs:
   deployment-id:
     description: "The ID of deployment created"
