@@ -24,7 +24,7 @@ public static class Inputs
       "warning" => LogLevel.Warning,
       "info" => LogLevel.Info,
       "verbose" => LogLevel.Verbose,
-      _ => LogLevel.Verbose
+      _ => LogLevel.Info
     };
 
     return new(
