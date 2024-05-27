@@ -6,6 +6,7 @@ on:
 permissions: write-all
 jobs:
   update-executable:
+    name: Update executable
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
