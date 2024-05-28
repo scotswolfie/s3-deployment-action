@@ -1,5 +1,11 @@
 ﻿# Changelog
 
+## 1.0.1 (2024-05-28)
+
+- 🔧 Use double quotes in action definition (aac3e04)
+- 🔧 Use single quotes in action definition (a3420a9)
+- 🔧 Consistent quotes in action definition (e27b90e)
+
 ## 1.0.0 (2024-05-28)
 
 - 📝 Update README.md (c38c937)
