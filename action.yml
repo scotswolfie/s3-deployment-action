@@ -1,59 +1,59 @@
-﻿name: 'AWS S3 Deployment Action'
-description: 'Deploy static files to AWS S3 and create GitHub deployments easily'
+﻿name: "AWS S3 Deployment Action"
+description: "Deploy static files to AWS S3 and create GitHub deployments easily"
 branding:
-  icon: 'send'
-  color: 'orange'
+  icon: "send"
+  color: "orange"
 inputs:
   aws-access-key:
-    description: 'Access key to use when uploading files to S3'
+    description: "Access key to use when uploading files to S3"
     required: true
   aws-secret-access-key:
-    description: 'Secret access key to use when uploading files to S3'
+    description: "Secret access key to use when uploading files to S3"
     required: true
   aws-region:
-    description: 'The name of the AWS region to use (e.g. eu-west-1)'
+    description: "The name of the AWS region to use (e.g. eu-west-1)"
     required: true
   bucket-name:
-    description: 'Which bucket to upload the files to'
+    description: "Which bucket to upload the files to"
     required: true
   deployment-log-url:
-    description: 'Overrides the default deployment logs address'
+    description: "Overrides the default deployment logs address"
   environment-name:
-    description: 'Name of environment assigned to GitHub deployment'
-    default: 'production'
+    description: "Name of environment assigned to GitHub deployment"
+    default: "production"
   environment-url:
-    description: 'Environment URL for the GitHub deployment. Use `{prefix}` to include the complete object prefix.'
+    description: "Environment URL for the GitHub deployment. Use `{prefix}` to include the complete object prefix."
   github-token:
-    description: 'GitHub API token necessary to create deployments (can be omitted if skip-github-deployment is true)'
+    description: "GitHub API token necessary to create deployments (can be omitted if skip-github-deployment is true)"
   git-ref:
-    description: 'Overrides the git ref used when creating deployments'
+    description: "Overrides the git ref used when creating deployments"
   log-level:
-    description: 'Decide how detailed the messages output to console should be'
-    default: 'info'
+    description: "Decide how detailed the messages output to console should be"
+    default: "info"
   object-prefix:
-    description: 'Defines prefix path for the new objects'
+    description: "Defines prefix path for the new objects"
   object-prefix-guid:
-    description: 'If set to `false` the new objects will not be prefixed with a GUID (placed after the object-prefix)'
-    default: 'true'
+    description: "If set to `false` the new objects will not be prefixed with a GUID (placed after the object-prefix)"
+    default: "true"
   production-environment:
-    description: 'Passed to GitHub when creating a deployment. Defaults to true when environment-name is `production`.'
+    description: "Passed to GitHub when creating a deployment. Defaults to true when environment-name is `production`."
   s3-endpoint:
-    description: 'Specify if you would like to use an S3 API endpoint other than the default'
+    description: "Specify if you would like to use an S3 API endpoint other than the default"
   skip-github-deployment:
-    description: 'Set to `true` if the action should only upload files to S3 and not create a GitHub deployment'
-    default: 'false'
+    description: "Set to `true` if the action should only upload files to S3 and not create a GitHub deployment"
+    default: "false"
   source-directory:
-    description: 'The path to containing the files to upload'
+    description: "The path to containing the files to upload"
     required: true
 outputs:
   deployment-id:
-    description: 'The ID of deployment created'
+    description: "The ID of deployment created"
   environment-url:
-    description: 'The final environment URL assigned to deployment'
+    description: "The final environment URL assigned to deployment"
   object-prefix-guid:
-    description: 'GUID used as part of the object prefix during S3 upload'
+    description: "GUID used as part of the object prefix during S3 upload"
   object-prefix:
-    description: 'The final object prefix used during S3 upload'
+    description: "The final object prefix used during S3 upload"
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"
