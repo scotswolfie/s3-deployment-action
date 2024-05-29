@@ -1,4 +1,9 @@
-﻿# Changelog
+# Changelog
+
+## 1.1.0 (2024-05-29)
+- 🚀 Update action's executable (f27fa5a)
+- 🔊 Periodically output progress info during lengthy uploads (094d2e8)
+- 🔧 Remove BOM from action definition (30300b2)
 
 ## 1.0.1 (2024-05-28)
 
