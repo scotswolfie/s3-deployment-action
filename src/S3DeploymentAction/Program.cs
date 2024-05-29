@@ -233,20 +233,40 @@ public class Program
       throw new DirectoryNotFoundException($"Directory at path {config.SourceDirectory} does not exist.");
     }
 
-    IEnumerable<string> filesToUpload = Directory
+    string[] filesToUpload = Directory
       .EnumerateFiles(
         config.SourceDirectory,
         "*",
         SearchOption.AllDirectories)
-      .Select(Path.GetFullPath);
+      .Select(Path.GetFullPath)
+      .ToArray();
 
     ConsoleLogger.Info("Beginning to upload files to S3.");
+    ConsoleLogger.Info($"There are {filesToUpload.Length} files to upload.");
+
+    DateTimeOffset lastInfoTime = DateTimeOffset.UtcNow;
+
+    int currentFile = 1;
 
     foreach (string filePath in filesToUpload)
     {
+      DateTimeOffset currentTime = DateTimeOffset.Now;
+
+      if ((currentTime - lastInfoTime).Seconds >= 10)
+      {
+        ConsoleLogger.Info(
+          $"Currently uploading file no. {currentFile}. There are {filesToUpload.Length - currentFile} files remaining."
+        );
+
+        lastInfoTime = DateTimeOffset.Now;
+      }
+
       string mimeType = MimeMapping.MimeUtility.GetMimeMapping(Path.GetFileName(filePath));
-      string fileLocation = Path.GetRelativePath(config.SourceDirectory, filePath)
+
+      string fileLocation = Path
+        .GetRelativePath(config.SourceDirectory, filePath)
         .Replace(Path.DirectorySeparatorChar, '/');
+
       string objectKey = $"{prefix}{fileLocation}";
 
       ConsoleLogger.Verbose($"Uploading {filePath} ({mimeType}) with key {objectKey}.");
@@ -260,6 +280,8 @@ public class Program
       };
 
       await client.PutObjectAsync(req);
+
+      currentFile += 1;
     }
 
     ConsoleLogger.Info("Finished uploading files to S3.");
