@@ -1,4 +1,4 @@
-﻿name: "AWS S3 Deployment Action"
+name: "AWS S3 Deployment Action"
 description: "Deploy static files to AWS S3 and create GitHub deployments easily"
 branding:
   icon: "send"
